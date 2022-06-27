@@ -1,0 +1,22 @@
+version: '3'
+services:
+  acorn-dns:
+    image: cjellick/acorn-dns:dev2
+    command:
+      - api-server
+    environment:
+      SQL_DIALECT: mysql
+      SQL_DSN: root:root@tcp(mysql:3306)/acorn_dns?charset=utf8mb4&parseTime=True&loc=Local
+    ports:
+      - 4315:4315
+
+    depends_on:
+      mysql:
+        condition: service_started
+  mysql:
+    image: mariadb:10.7.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: acorn_dns
+    ports:
+      - 3306:3306
