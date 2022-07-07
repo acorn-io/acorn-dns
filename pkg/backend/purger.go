@@ -43,9 +43,9 @@ func (b *backend) purge() {
 			currentPageRecords := make(map[model.FQDNTypePair]*route53.ResourceRecordSet)
 			pairsToQuery := make(map[model.FQDNTypePair]bool)
 			for _, recordSet := range page.ResourceRecordSets {
-				if aws.StringValue(recordSet.Type) != string(model.RecordTypeA) &&
-					aws.StringValue(recordSet.Type) != string(model.RecordTypeCname) &&
-					aws.StringValue(recordSet.Type) != string(model.RecordTypeTxt) {
+				if aws.StringValue(recordSet.Type) != model.RecordTypeA &&
+					aws.StringValue(recordSet.Type) != model.RecordTypeCname &&
+					aws.StringValue(recordSet.Type) != model.RecordTypeTxt {
 					continue
 				}
 				// key is name (fqdn) + type
