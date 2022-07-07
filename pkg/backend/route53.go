@@ -65,7 +65,7 @@ func NewBackend(database db.Database) (Backend, error) {
 	return &backend{
 		db:        database,
 		LeaseTime: d,
-		Zone:      strings.TrimRight(aws.StringValue(z.HostedZone.Name), "."),
+		Zone:      strings.TrimSuffix(aws.StringValue(z.HostedZone.Name), "."),
 		ZoneID:    aws.StringValue(z.HostedZone.Id),
 		Svc:       svc,
 		TTL:       ttl,
@@ -80,13 +80,12 @@ func (b *backend) GetDomain(domainName string) (db.Domain, error) {
 func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequest) ([]model.FQDNTypePair, error) {
 	recordMap := make(map[model.FQDNTypePair]model.RecordRequest)
 	var cleanedRecords []model.FQDNTypePair
-	d := "." + domain
 	// remove duplicates and FQDNs that don't belong to this domain
 	for _, record := range records {
-		if strings.HasSuffix(record.Name, d) {
+		if strings.HasSuffix(record.Name, domain) {
 			pair := model.FQDNTypePair{
 				FQDN: record.Name,
-				Type: string(record.Type),
+				Type: record.Type,
 			}
 			if _, ok := recordMap[pair]; !ok {
 				cleanedRecords = append(cleanedRecords, pair)
@@ -149,9 +148,9 @@ func (b *backend) CreateRecord(domain string, domainID uint, input model.RecordR
 		})
 	}
 
-	fqdn := fmt.Sprintf("%s.%s", input.Name, domain)
+	fqdn := input.Name + domain
 	rrs := &route53.ResourceRecordSet{
-		Type:            aws.String(string(input.Type)),
+		Type:            aws.String(input.Type),
 		Name:            aws.String(fqdn),
 		ResourceRecords: rr,
 		TTL:             aws.Int64(b.TTL),
@@ -173,7 +172,7 @@ func (b *backend) CreateRecord(domain string, domainID uint, input model.RecordR
 		return model.RecordResponse{}, fmt.Errorf("failed to upsert route53 record %v with error %v", fqdn, err)
 	}
 
-	if err := b.db.PersistRecord(domainID, fqdn, string(input.Type), input.Values); err != nil {
+	if err := b.db.PersistRecord(domainID, fqdn, input.Type, input.Values); err != nil {
 		return model.RecordResponse{}, err
 	}
 

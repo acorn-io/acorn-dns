@@ -5,15 +5,13 @@ import (
 )
 
 const (
-	RecordTypeA     RecordType = "A"
-	RecordTypeAAAA  RecordType = "AAAA"
-	RecordTypeCname RecordType = "CNAME"
-	RecordTypeTxt   RecordType = "TXT"
+	RecordTypeA     = "A"
+	RecordTypeAAAA  = "AAAA"
+	RecordTypeCname = "CNAME"
+	RecordTypeTxt   = "TXT"
 )
 
-type RecordType string
-
-func (rt RecordType) IsValid() error {
+func IsValidRecordType(rt string) error {
 	switch rt {
 	case RecordTypeA, RecordTypeAAAA, RecordTypeCname, RecordTypeTxt:
 		return nil
@@ -37,9 +35,9 @@ type RenewResponse struct {
 }
 
 type RecordRequest struct {
-	Name   string     `json:"name,omitempty"`
-	Type   RecordType `json:"type,omitempty"`
-	Values []string   `json:"values,omitempty"`
+	Name   string   `json:"name,omitempty"`
+	Type   string   `json:"type,omitempty"`
+	Values []string `json:"values,omitempty"`
 }
 
 type RecordResponse struct {

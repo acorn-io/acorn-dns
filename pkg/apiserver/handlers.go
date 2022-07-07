@@ -110,7 +110,7 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 }
 
 func validateRecord(input model.RecordRequest) error {
-	if err := input.Type.IsValid(); err != nil {
+	if err := model.IsValidRecordType(input.Type); err != nil {
 		return err
 	}
 
