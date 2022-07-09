@@ -109,6 +109,19 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, record, "")
 }
 
+func (h *handler) deleteRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	domain := vars["domain"]
+	record := vars["record"]
+	domainID := domainIDFromContext(r.Context())
+
+	err := h.backend.DeleteRecord(record, domain, domainID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err)
+		return
+	}
+}
+
 func validateRecord(input model.RecordRequest) error {
 	if err := model.IsValidRecordType(input.Type); err != nil {
 		return err

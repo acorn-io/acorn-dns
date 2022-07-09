@@ -43,6 +43,7 @@ func (a *apiServer) Start(backend backend.Backend) error {
 	authedRoutes := api.PathPrefix("/domains/{domain}").Subrouter()
 	authedRoutes.Use(tokenAuthMiddleware(backend))
 	authedRoutes.Path("/records").Methods("POST").HandlerFunc(h.createRecord)
+	authedRoutes.Path("/records/{record}").Methods("DELETE").HandlerFunc(h.deleteRecord)
 	authedRoutes.Path("/renew").Methods("POST").HandlerFunc(h.renew)
 	authedRoutes.Methods("GET").HandlerFunc(h.getDomain)
 	authedRoutes.Methods("DELETE").HandlerFunc(h.deleteDomain)
