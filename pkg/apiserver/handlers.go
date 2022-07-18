@@ -39,7 +39,7 @@ func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {
 
 	d, err := h.backend.GetDomain(domainName)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {
 func (h *handler) createDomain(w http.ResponseWriter, r *http.Request) {
 	domain, err := h.backend.CreateDomain()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 	writeSuccess(w, domain, "")
@@ -60,7 +60,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 
 	outOfSync, err := h.backend.Renew(domainName, domainID, input.Records)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -87,12 +87,12 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if err := validateRecord(input); err != nil {
-		writeError(w, http.StatusUnprocessableEntity, err)
+		handleError(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 
 	record, err := h.backend.CreateRecord(domain, domainID, input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -117,7 +117,7 @@ func (h *handler) deleteRecord(w http.ResponseWriter, r *http.Request) {
 
 	err := h.backend.DeleteRecord(record, domain, domainID)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 }

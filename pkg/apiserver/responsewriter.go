@@ -8,11 +8,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func writeError(w http.ResponseWriter, httpStatus int, err error) {
-	logrus.Errorf("got a response error: %v", err)
+func writeErrorResponse(w http.ResponseWriter, httpStatus int, message string, data interface{}) {
 	o := model.ErrorResponse{
 		Status:  httpStatus,
-		Message: err.Error(),
+		Message: message,
+		Data:    data,
 	}
 	res, _ := json.Marshal(o)
 
@@ -21,10 +21,15 @@ func writeError(w http.ResponseWriter, httpStatus int, err error) {
 	_, _ = w.Write(res)
 }
 
+func handleError(w http.ResponseWriter, httpStatus int, err error) {
+	logrus.Errorf("Error during request: %v", err)
+	writeErrorResponse(w, httpStatus, err.Error(), nil)
+}
+
 func writeSuccess(w http.ResponseWriter, data interface{}, msg string) {
 	res, err := json.Marshal(data)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
