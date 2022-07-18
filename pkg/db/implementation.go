@@ -232,6 +232,21 @@ func (d *database) GetDomainRecords(domainID uint) (map[model.FQDNTypePair]Recor
 	return recordMap, nil
 }
 
+func (d *database) GetDomainRecordsByFQDN(fqdn string, domainID uint) ([]Record, error) {
+	var records []Record
+	sql := d.db.Where("fqdn = ? and domain_id = ?", fqdn, domainID).Find(&records)
+	if sql.Error != nil {
+		return records, sql.Error
+	}
+
+	return records, nil
+}
+
+func (d *database) DeleteRecords(records []Record) error {
+	sql := d.db.Delete(&records)
+	return sql.Error
+}
+
 func (d *database) getRecord(fqdn, rType string) (Record, error) {
 	record := Record{}
 	sql := d.db.Where("fqdn = ? and type = ?", fqdn, rType).Limit(1).Find(&record)

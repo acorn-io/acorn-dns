@@ -10,6 +10,8 @@ type Database interface {
 	PersistRecord(domainID uint, fqdn, rType string, values []string) error
 	Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair) error
 	GetDomainRecords(domainID uint) (map[model.FQDNTypePair]Record, error)
+	GetDomainRecordsByFQDN(fqdn string, domainID uint) ([]Record, error)
+	DeleteRecords(records []Record) error
 	PurgeOldDomainsAndRecords(maxDomainAgeSeconds, maxRecordAgeSeconds int64) (int64, int64, error)
 	GetYoungRecords(maxAgeSeconds int64, fqdnTypePairs map[model.FQDNTypePair]bool) (map[model.FQDNTypePair]Record, error)
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/acorn-io/acorn-dns/pkg/model"
 	"github.com/acorn-io/acorn-dns/pkg/version"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 type handler struct {
@@ -39,7 +38,7 @@ func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {
 
 	d, err := h.backend.GetDomain(domainName)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -49,7 +48,7 @@ func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {
 func (h *handler) createDomain(w http.ResponseWriter, r *http.Request) {
 	domain, err := h.backend.CreateDomain()
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 	writeSuccess(w, domain, "")
@@ -60,7 +59,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -70,7 +69,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 
 	outOfSync, err := h.backend.Renew(domainName, domainID, input.Records)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -81,18 +80,35 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 	writeSuccess(w, resp, "")
 }
 
+func (h *handler) purgerecords(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	domainName := vars["domain"]
+	domainID := domainIDFromContext(r.Context())
+
+	err := h.backend.PurgeRecords(domainName, domainID)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp := model.DomainResponse{
+		Name: domainName,
+	}
+	writeSuccess(w, resp, "")
+}
+
 func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 
 	var input model.RecordRequest
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	if err := validateRecord(input); err != nil {
-		writeError(w, http.StatusUnprocessableEntity, err)
+		handleError(w, http.StatusUnprocessableEntity, err)
 		return
 	}
 
@@ -102,11 +118,24 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 
 	record, err := h.backend.CreateRecord(domain, domainID, input)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, err)
+		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	writeSuccess(w, record, "")
+}
+
+func (h *handler) deleteRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	domain := vars["domain"]
+	record := vars["record"]
+	domainID := domainIDFromContext(r.Context())
+
+	err := h.backend.DeleteRecord(record, domain, domainID)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, err)
+		return
+	}
 }
 
 func validateRecord(input model.RecordRequest) error {
@@ -145,9 +174,4 @@ func validateRecord(input model.RecordRequest) error {
 	}
 
 	return nil
-}
-
-func (h *handler) deleteDomain(w http.ResponseWriter, r *http.Request) {
-	logrus.Infof("DELETE DOMAIN")
-	// TODO  Implement
 }
