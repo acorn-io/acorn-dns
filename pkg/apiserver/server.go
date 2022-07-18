@@ -32,21 +32,32 @@ func (a *apiServer) Start(backend backend.Backend) error {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.Use(loggingMiddleware(a.log))
-
 	h := newHandler(backend)
+
+	// When functioning properly, these routes will return the version of tha app that is running
 	router.Path("/").HandlerFunc(h.root)
 	router.Path("/healthz").HandlerFunc(h.root)
 
 	api := router.PathPrefix("/v1").Subrouter()
+
+	// POSTing to a domain creates a new domain and token. Further requests (below) against the created domain resource
+	// require authentication using the token
 	api.Path("/domains").Methods("POST").HandlerFunc(h.createDomain)
 
+	// All routes using this authedRoutes subrouter will require token based authentication
 	authedRoutes := api.PathPrefix("/domains/{domain}").Subrouter()
 	authedRoutes.Use(tokenAuthMiddleware(backend))
+
+	// Basic routes for the domain resource
+	authedRoutes.Methods("GET").HandlerFunc(h.getDomain)
+
+	// These are for records sub-resource
 	authedRoutes.Path("/records").Methods("POST").HandlerFunc(h.createRecord)
 	authedRoutes.Path("/records/{record}").Methods("DELETE").HandlerFunc(h.deleteRecord)
+
+	// These are "actions" that can be taken on a domain
 	authedRoutes.Path("/renew").Methods("POST").HandlerFunc(h.renew)
-	authedRoutes.Methods("GET").HandlerFunc(h.getDomain)
-	authedRoutes.Methods("DELETE").HandlerFunc(h.deleteDomain)
+	authedRoutes.Path("/purgerecords").Methods("POST").HandlerFunc(h.purgerecords)
 
 	// Note: this allows not found urls to be logged via the middleware
 	// It **HAS** to be defined after all other paths are defined.

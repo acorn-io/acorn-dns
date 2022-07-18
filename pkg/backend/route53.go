@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/exp/maps"
 )
 
 const (
@@ -135,10 +136,6 @@ func (b *backend) CreateDomain() (model.DomainResponse, error) {
 	}, nil
 }
 
-func (b *backend) DeleteDomain(domainName string) error {
-	return nil
-}
-
 func (b *backend) DeleteRecord(recordPrefix string, domain string, domainID uint) error {
 	fqdn := recordPrefix + domain
 
@@ -147,11 +144,34 @@ func (b *backend) DeleteRecord(recordPrefix string, domain string, domainID uint
 		return err
 	}
 
+	if err = b.doRecordsDelete(records); err != nil {
+		return fmt.Errorf("failed to delete route53 records for FQDN %v with error %v", fqdn, err)
+	}
+	return nil
+}
+
+func (b *backend) PurgeRecords(domain string, domainID uint) error {
+	recs, err := b.db.GetDomainRecords(domainID)
+	if err != nil {
+		return err
+	}
+	records := maps.Values(recs)
+	if err = b.doRecordsDelete(records); err != nil {
+		return fmt.Errorf("failed to delete route53 records for domain %v with error %v", domain, err)
+	}
+	return nil
+}
+
+func (b *backend) doRecordsDelete(records []db.Record) error {
+	if len(records) == 0 {
+		return nil
+	}
+
 	changes := make([]*route53.Change, 0)
 	for _, record := range records {
 		rrs := &route53.ResourceRecordSet{
 			Type: aws.String(record.Type),
-			Name: aws.String(fqdn),
+			Name: aws.String(record.FQDN),
 			TTL:  aws.Int64(b.TTL),
 		}
 		rr := make([]*route53.ResourceRecord, 0)
@@ -175,7 +195,7 @@ func (b *backend) DeleteRecord(recordPrefix string, domain string, domainID uint
 	}
 
 	if _, err := b.Svc.ChangeResourceRecordSets(&rrsInput); err != nil {
-		return fmt.Errorf("failed to delete route53 records %v with error %v", fqdn, err)
+		return err
 	}
 
 	return b.db.DeleteRecords(records)

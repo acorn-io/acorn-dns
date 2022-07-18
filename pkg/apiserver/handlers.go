@@ -11,7 +11,6 @@ import (
 	"github.com/acorn-io/acorn-dns/pkg/model"
 	"github.com/acorn-io/acorn-dns/pkg/version"
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 type handler struct {
@@ -77,6 +76,23 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 	resp := model.RenewResponse{
 		Name:             domainName,
 		OutOfSyncRecords: outOfSync,
+	}
+	writeSuccess(w, resp, "")
+}
+
+func (h *handler) purgerecords(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	domainName := vars["domain"]
+	domainID := domainIDFromContext(r.Context())
+
+	err := h.backend.PurgeRecords(domainName, domainID)
+	if err != nil {
+		handleError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	resp := model.DomainResponse{
+		Name: domainName,
 	}
 	writeSuccess(w, resp, "")
 }
@@ -158,9 +174,4 @@ func validateRecord(input model.RecordRequest) error {
 	}
 
 	return nil
-}
-
-func (h *handler) deleteDomain(w http.ResponseWriter, r *http.Request) {
-	logrus.Infof("DELETE DOMAIN")
-	// TODO  Implement
 }
