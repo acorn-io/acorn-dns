@@ -10,20 +10,28 @@ import (
 	"github.com/acorn-io/acorn-dns/pkg/version"
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/sethvargo/go-limiter/httplimit"
+	"github.com/sethvargo/go-limiter/memorystore"
 	"github.com/sirupsen/logrus"
 )
 
 type apiServer struct {
-	ctx  context.Context
-	log  *logrus.Entry
-	port int
+	ctx               context.Context
+	log               *logrus.Entry
+	port              int
+	unauthedRateLimit uint64
+	authedRateLimit   uint64
+	rateLimitState    string
 }
 
-func NewAPIServer(ctx context.Context, log *logrus.Entry, port int) *apiServer {
+func NewAPIServer(ctx context.Context, log *logrus.Entry, port int, unauthedRateLimit, authedRateLimt uint64, rateLimitMode string) *apiServer {
 	return &apiServer{
-		ctx:  ctx,
-		log:  log,
-		port: port,
+		ctx:               ctx,
+		log:               log,
+		port:              port,
+		unauthedRateLimit: unauthedRateLimit,
+		authedRateLimit:   authedRateLimt,
+		rateLimitState:    rateLimitMode,
 	}
 }
 
@@ -41,8 +49,9 @@ func (a *apiServer) Start(backend backend.Backend) error {
 	api := router.PathPrefix("/v1").Subrouter()
 
 	// POSTing to a domain creates a new domain and token. Further requests (below) against the created domain resource
-	// require authentication using the token
-	api.Path("/domains").Methods("POST").HandlerFunc(h.createDomain)
+	// require authentication using the token. This gets rate limited by IP to prevent spamming creation of domains
+	unauthedLimiter := newRateLimiter(a.unauthedRateLimit, a.rateLimitState, httplimit.IPKeyFunc("X-Forwarded-For", "X-Real-IP"))
+	api.Path("/domains").Methods("POST").Handler(unauthedLimiter.wrap(h.createDomain))
 
 	// All routes using this authedRoutes subrouter will require token based authentication
 	authedRoutes := api.PathPrefix("/domains/{domain}").Subrouter()
@@ -51,13 +60,15 @@ func (a *apiServer) Start(backend backend.Backend) error {
 	// Basic routes for the domain resource
 	authedRoutes.Methods("GET").HandlerFunc(h.getDomain)
 
+	authedLimiter := newRateLimiter(a.authedRateLimit, a.rateLimitState, domainKeyFunc)
+
 	// These are for records sub-resource
-	authedRoutes.Path("/records").Methods("POST").HandlerFunc(h.createRecord)
-	authedRoutes.Path("/records/{record}").Methods("DELETE").HandlerFunc(h.deleteRecord)
+	authedRoutes.Path("/records").Methods("POST").Handler(authedLimiter.wrap(h.createRecord))
+	authedRoutes.Path("/records/{record}").Methods("DELETE").Handler(authedLimiter.wrap(h.deleteRecord))
 
 	// These are "actions" that can be taken on a domain
-	authedRoutes.Path("/renew").Methods("POST").HandlerFunc(h.renew)
-	authedRoutes.Path("/purgerecords").Methods("POST").HandlerFunc(h.purgerecords)
+	authedRoutes.Path("/renew").Methods("POST").Handler(authedLimiter.wrap(h.renew))
+	authedRoutes.Path("/purgerecords").Methods("POST").Handler(authedLimiter.wrap(h.purgerecords))
 
 	// Note: this allows not found urls to be logged via the middleware
 	// It **HAS** to be defined after all other paths are defined.
@@ -93,4 +104,43 @@ func (a *apiServer) Start(backend backend.Backend) error {
 	}
 
 	return nil
+}
+
+func newRateLimiter(tokens uint64, state string, keyFunc func(r *http.Request) (string, error)) *rl {
+	store, err := memorystore.New(&memorystore.Config{
+		Tokens:   tokens,
+		Interval: time.Hour,
+	})
+
+	mw, err := httplimit.NewMiddleware(store, keyFunc)
+	if err != nil {
+		logrus.Fatal("middleware store or keyFunc nil")
+	}
+
+	rl := &rl{
+		state: state,
+		mw:    mw,
+	}
+
+	return rl
+}
+
+type rl struct {
+	mw    *httplimit.Middleware
+	state string
+}
+
+func (r *rl) wrap(next func(w http.ResponseWriter, r *http.Request)) http.Handler {
+	if r.state == "enabled" {
+		return r.mw.Handle(http.HandlerFunc(next))
+	} else {
+		logrus.Warnf("Rate limiting disabled")
+	}
+	return http.HandlerFunc(next)
+}
+
+func domainKeyFunc(r *http.Request) (string, error) {
+	vars := mux.Vars(r)
+	domainName := vars["domain"]
+	return domainName, nil
 }

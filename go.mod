@@ -15,6 +15,7 @@ require (
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
 	k8s.io/apimachinery v0.24.3
+	github.com/sethvargo/go-limiter v0.7.2
 )
 
 require (

@@ -44,7 +44,8 @@ func (s *apiServerCommand) Execute(c *cli.Context) error {
 		return err
 	}
 
-	apiServer := apiserver.NewAPIServer(ctx, log, c.Int("port"))
+	apiServer := apiserver.NewAPIServer(ctx, log, c.Int("port"), c.Uint64("unauthed-rate-limit"),
+		c.Uint64("authed-rate-limit"), c.String("rate-limit-state"))
 
 	if err := apiServer.Start(back); err != nil {
 		return err
@@ -162,6 +163,23 @@ func serverCommand() *cli.Command {
 			Name:    "db-port",
 			Usage:   "Database port",
 			EnvVars: []string{"ACORN_DB_PORT"},
+		&cli.StringFlag{
+			Name:    "rate-limit-state",
+			Usage:   "Should requests be rate limited",
+			EnvVars: []string{"ACORN_RATE_LIMIT_STATE"},
+			Value:   "enabled",
+		},
+		&cli.Uint64Flag{
+			Name:    "authed-rate-limit",
+			Usage:   "The per-hour rate limit for authenticated requests",
+			EnvVars: []string{"ACORN_AUTHED_RATE_LIMIT"},
+			Value:   3600,
+		},
+		&cli.Uint64Flag{
+			Name:    "unauthed-rate-limit",
+			Usage:   "The per-hour rate limit for unauthenticated requests",
+			EnvVars: []string{"ACORN_UNAUTHED_RATE_LIMIT"},
+			Value:   100,
 		},
 	}
 
