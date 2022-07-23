@@ -42,7 +42,7 @@ func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeSuccess(w, model.DomainResponse{Name: d.Domain}, "")
+	writeSuccess(w, http.StatusOK, model.DomainResponse{Name: d.Domain})
 }
 
 func (h *handler) createDomain(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func (h *handler) createDomain(w http.ResponseWriter, r *http.Request) {
 		handleError(w, http.StatusInternalServerError, err)
 		return
 	}
-	writeSuccess(w, domain, "")
+	writeSuccess(w, http.StatusCreated, domain)
 }
 
 func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +77,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 		Name:             domainName,
 		OutOfSyncRecords: outOfSync,
 	}
-	writeSuccess(w, resp, "")
+	writeSuccess(w, http.StatusOK, resp)
 }
 
 func (h *handler) purgerecords(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +94,7 @@ func (h *handler) purgerecords(w http.ResponseWriter, r *http.Request) {
 	resp := model.DomainResponse{
 		Name: domainName,
 	}
-	writeSuccess(w, resp, "")
+	writeSuccess(w, http.StatusAccepted, resp)
 }
 
 func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +122,7 @@ func (h *handler) createRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeSuccess(w, record, "")
+	writeSuccess(w, http.StatusCreated, record)
 }
 
 func (h *handler) deleteRecord(w http.ResponseWriter, r *http.Request) {
