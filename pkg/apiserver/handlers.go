@@ -67,7 +67,7 @@ func (h *handler) renew(w http.ResponseWriter, r *http.Request) {
 	domainName := vars["domain"]
 	domainID := domainIDFromContext(r.Context())
 
-	outOfSync, err := h.backend.Renew(domainName, domainID, input.Records)
+	outOfSync, err := h.backend.Renew(domainName, domainID, input.Records, input.Version)
 	if err != nil {
 		handleError(w, http.StatusInternalServerError, err)
 		return

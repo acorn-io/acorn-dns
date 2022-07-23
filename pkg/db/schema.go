@@ -12,6 +12,7 @@ type Domain struct {
 	Domain      string `gorm:"uniqueIndex"`
 	TokenHash   string
 	LastCheckIn time.Time
+	Version     string
 }
 
 type Record struct {

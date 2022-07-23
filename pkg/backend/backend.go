@@ -8,7 +8,7 @@ import (
 type Backend interface {
 	GetDomain(domainName string) (db.Domain, error)
 	CreateDomain() (model.DomainResponse, error)
-	Renew(domain string, domainID uint, records []model.RecordRequest) ([]model.FQDNTypePair, error)
+	Renew(domain string, domainID uint, records []model.RecordRequest, version string) ([]model.FQDNTypePair, error)
 	PurgeRecords(domain string, domainID uint) error
 	GetRootDomain() string
 	CreateRecord(domain string, domainID uint, input model.RecordRequest) (model.RecordResponse, error)

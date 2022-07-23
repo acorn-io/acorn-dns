@@ -8,7 +8,7 @@ type Database interface {
 	CreateNewSubDomain(tokenHash, domainName string) (Domain, error)
 	GetDomain(domain string) (Domain, error)
 	PersistRecord(domainID uint, fqdn, rType string, values []string) error
-	Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair) error
+	Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair, version string) error
 	GetDomainRecords(domainID uint) (map[model.FQDNTypePair]Record, error)
 	GetDomainRecordsByFQDN(fqdn string, domainID uint) ([]Record, error)
 	DeleteRecords(records []Record) error
