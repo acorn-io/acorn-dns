@@ -78,7 +78,7 @@ func (b *backend) GetDomain(domainName string) (db.Domain, error) {
 	return b.db.GetDomain(domainName)
 }
 
-func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequest) ([]model.FQDNTypePair, error) {
+func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequest, version string) ([]model.FQDNTypePair, error) {
 	recordMap := make(map[model.FQDNTypePair]model.RecordRequest)
 	var cleanedRecords []model.FQDNTypePair
 	// remove duplicates and FQDNs that don't belong to this domain
@@ -95,7 +95,7 @@ func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequ
 		}
 	}
 
-	if err := b.db.Renew(domainID, cleanedRecords); err != nil {
+	if err := b.db.Renew(domainID, cleanedRecords, version); err != nil {
 		return nil, err
 	}
 

@@ -27,6 +27,7 @@ type DomainResponse struct {
 
 type RenewRequest struct {
 	Records []RecordRequest `json:"records,omitempty"`
+	Version string          `json:"version,omitempty"`
 }
 
 type RenewResponse struct {

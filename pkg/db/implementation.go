@@ -108,7 +108,7 @@ func (d *database) GetDomain(domainName string) (Domain, error) {
 	return domain, sql.Error
 }
 
-func (d *database) Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair) error {
+func (d *database) Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair, version string) error {
 
 	return d.db.Transaction(func(tx *gorm.DB) error {
 		now := time.Now()
@@ -131,7 +131,8 @@ func (d *database) Renew(domainID uint, fqdnTypePairs []model.FQDNTypePair) erro
 			}
 		}
 
-		sql := tx.Model(Domain{Model: gorm.Model{ID: domainID}}).Update("last_check_in", now)
+		sql := tx.Model(Domain{Model: gorm.Model{ID: domainID}}).Updates(
+			map[string]interface{}{"last_check_in": now, "version": version})
 		if sql.Error != nil {
 			return sql.Error
 		}
