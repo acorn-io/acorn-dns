@@ -8,9 +8,7 @@ RUN apk add --no-cache ca-certificates
 RUN adduser -D acorn
 # USER acorn commented out so that i can easily get into the container and do stuff to it
 ENTRYPOINT ["/usr/local/bin/acorn-dns"]
-
-FROM base AS goreleaser
-COPY acorn-dns /usr/local/bin/acorn-dns
+CMD ["api-server"]
 
 FROM base
 COPY --from=build /src/bin/acorn-dns /usr/local/bin/acorn-dns
