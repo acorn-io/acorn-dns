@@ -12,21 +12,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-const (
-	intervalSeconds     int64 = 24 * 60 * 60      // Check for domains and records to purge once a day
-	domainMaxAgeSeconds int64 = 30 * 24 * 60 * 60 // A domain is purged after 30 days
-	recordMaxAgeSeconds int64 = 48 * 60 * 60      // A record is purged after 2 days
-)
-
 func (b *backend) StartPurgerDaemon(stopCh <-chan struct{}) {
-	logrus.Info("starting purge daemon")
-	wait.JitterUntil(b.purge, time.Duration(intervalSeconds)*time.Second, .002, true, stopCh)
+	logrus.Infof("starting purge daemon. Purge interval: %v, max domain age: %v, record max age: %v",
+		b.purgeIntervalSeconds, b.domainMaxAgeSeconds, b.recordMaxAgeSeconds)
+	wait.JitterUntil(b.purge, time.Duration(b.purgeIntervalSeconds)*time.Second, .002, true, stopCh)
 }
 
 func (b *backend) purge() {
 	logrus.Infof("Beginning purge ☠️")
 
-	domainDeleted, recordsDeleted, err := b.db.PurgeOldDomainsAndRecords(domainMaxAgeSeconds, recordMaxAgeSeconds)
+	domainDeleted, recordsDeleted, err := b.db.PurgeOldDomainsAndRecords(b.domainMaxAgeSeconds, b.recordMaxAgeSeconds)
 	if err != nil {
 		logrus.Errorf("problem purging old domains: %v", err)
 	}
@@ -60,7 +55,7 @@ func (b *backend) purge() {
 
 			// Young records should not be deleted. Remove them from the map for this page. Once they are removed, records that
 			// are old or not in our DB at all will be left. These are the purge-worthy records. Add them to the recordsToDelete map
-			youngRecordsByPair, err := b.db.GetYoungRecords(recordMaxAgeSeconds, pairsToQuery)
+			youngRecordsByPair, err := b.db.GetYoungRecords(b.recordMaxAgeSeconds, pairsToQuery)
 			if err != nil {
 				logrus.Errorf("Could not load records from database. Error: %v", err)
 				return false

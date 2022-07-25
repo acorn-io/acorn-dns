@@ -10,7 +10,6 @@ type Backend interface {
 	CreateDomain() (model.DomainResponse, error)
 	Renew(domain string, domainID uint, records []model.RecordRequest, version string) ([]model.FQDNTypePair, error)
 	PurgeRecords(domain string, domainID uint) error
-	GetRootDomain() string
 	CreateRecord(domain string, domainID uint, input model.RecordRequest) (model.RecordResponse, error)
 	DeleteRecord(recordPrefix string, domain string, domainID uint) error
 	StartPurgerDaemon(done <-chan struct{})
