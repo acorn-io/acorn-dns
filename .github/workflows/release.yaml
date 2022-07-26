@@ -1,0 +1,24 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  push:
+    runs-on: buildjet-4vcpu-ubuntu-2004
+    steps:
+      - uses: debianmaster/actions-k3s@v1.0.5
+        with:
+          version: 'v1.24.3-k3s1'
+      - uses: actions/checkout@v3
+      - uses: acorn-io/actions-setup@v1
+      - uses: acorn-io/actions-login@v1
+        with:
+          registry: ghcr.io
+          username: foobar
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          acorn build -t ghcr.io/acorn-io/acorn-dns:$GITHUB_REF .
+          acorn push ghcr.io/acorn-io/acorn-dns:$GITHUB_REF
