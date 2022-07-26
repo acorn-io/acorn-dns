@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/acorn-io/acorn-dns/pkg/apiserver"
@@ -17,7 +16,7 @@ import (
 type apiServerCommand struct{}
 
 func (s *apiServerCommand) Execute(c *cli.Context) error {
-	ctx := signals.SetupSignalHandler(context.Background())
+	ctx := signals.SetupSignalContext()
 
 	log := logrus.WithField("command", "api-server")
 
