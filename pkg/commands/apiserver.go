@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/acorn-io/acorn-dns/pkg/apiserver"
 	"github.com/acorn-io/acorn-dns/pkg/backend"
@@ -22,9 +23,12 @@ func (s *apiServerCommand) Execute(c *cli.Context) error {
 
 	log.Infof("version: %v", version.Get())
 
-	database, err := db.New(ctx,
-		c.String("sql-dialect"),
-		c.String("sql-dsn"),
+	engine, dsn, err := constructDSN(c)
+	if err != nil {
+		return err
+	}
+
+	database, err := db.New(ctx, engine, dsn,
 		&gorm.Config{Logger: db.NewLogger(c.String("log-level"))})
 	if err != nil {
 		return err
@@ -48,6 +52,39 @@ func (s *apiServerCommand) Execute(c *cli.Context) error {
 	}
 
 	return nil
+}
+
+func constructDSN(c *cli.Context) (string, string, error) {
+	engine := c.String("db-engine")
+	if engine == "sqlite" {
+		return engine, c.String("db-sqlite-dsn"), nil
+	} else if engine == "mariadb" {
+		user := c.String("db-user")
+		if user == "" {
+			return "", "", fmt.Errorf("missing database user")
+		}
+		password := c.String("db-password")
+		if password == "" {
+			return "", "", fmt.Errorf("missing database password")
+		}
+		name := c.String("db-name")
+		if name == "" {
+			return "", "", fmt.Errorf("missing database name")
+		}
+		host := c.String("db-host")
+		if host == "" {
+			return "", "", fmt.Errorf("missing database host")
+		}
+		port := c.String("db-port")
+		if port == "" {
+			return "", "", fmt.Errorf("missing database port")
+		}
+
+		dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, name)
+		return engine, dsn, nil
+	} else {
+		return "", "", fmt.Errorf("unsupported db engine: %v", engine)
+	}
 }
 
 func serverCommand() *cli.Command {
@@ -91,16 +128,41 @@ func serverCommand() *cli.Command {
 			Value:   172800,
 		},
 		&cli.StringFlag{
-			Name:    "sql-dialect",
-			Usage:   "The type of sql to use, sqlite or mysql",
-			EnvVars: []string{"ACORN_SQL_DIALECT"},
+			Name:    "db-engine",
+			Usage:   "The type of DB to connect to, sqlite or mariadb",
+			EnvVars: []string{"ACORN_DB_ENGINE"},
 			Value:   "sqlite",
 		},
 		&cli.StringFlag{
-			Name:    "sql-dsn",
-			Usage:   "The DSN to use to connect to",
-			EnvVars: []string{"ACORN_SQL_DSN"},
+			Name:    "db-sqlite-dsn",
+			Usage:   "The DSN to use to connect to a sqlite db",
+			EnvVars: []string{"ACORN_DB_SQLITE_DSN"},
 			Value:   "file:acorn.sqlite?_pragma=foreign_keys(1)",
+		},
+		&cli.StringFlag{
+			Name:    "db-user",
+			Usage:   "Database user",
+			EnvVars: []string{"ACORN_DB_USER"},
+		},
+		&cli.StringFlag{
+			Name:    "db-password",
+			Usage:   "Database password",
+			EnvVars: []string{"ACORN_DB_PASSWORD"},
+		},
+		&cli.StringFlag{
+			Name:    "db-name",
+			Usage:   "Name of the database",
+			EnvVars: []string{"ACORN_DB_NAME"},
+		},
+		&cli.StringFlag{
+			Name:    "db-host",
+			Usage:   "Database host",
+			EnvVars: []string{"ACORN_DB_HOST"},
+		},
+		&cli.StringFlag{
+			Name:    "db-port",
+			Usage:   "Database port",
+			EnvVars: []string{"ACORN_DB_PORT"},
 		},
 	}
 

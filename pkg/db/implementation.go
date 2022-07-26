@@ -26,7 +26,7 @@ type database struct {
 }
 
 // New creates a new database connection
-func New(ctx context.Context, dialect string, dsn string, config *gorm.Config) (Database, error) {
+func New(ctx context.Context, engine string, dsn string, config *gorm.Config) (Database, error) {
 	if config == nil {
 		config = &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Silent),
@@ -36,13 +36,13 @@ func New(ctx context.Context, dialect string, dsn string, config *gorm.Config) (
 	var db *gorm.DB
 	var err error
 
-	if dialect == "sqlite" {
+	if engine == "sqlite" {
 		db, err = gorm.Open(sqlite.Open(dsn), config)
 		db.Exec("PRAGMA foreign_keys = ON")
-	} else if dialect == "mysql" {
+	} else if engine == "mariadb" {
 		db, err = gorm.Open(mysql.Open(dsn), config)
 	} else {
-		return nil, fmt.Errorf("unsupported dialect: %s", dialect)
+		return nil, fmt.Errorf("unsupported dialect: %s", engine)
 	}
 
 	db = db.WithContext(ctx)
