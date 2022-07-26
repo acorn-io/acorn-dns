@@ -6,13 +6,7 @@ args: {
 	dbName: "acorn_dns"
 
 	// The AWS Route53 zone where FQDNs will be created
-	route53ZoneId: ""
-
-	// The AWS access key for making Route53 requests. Shouldn't be used in production
-	route53AccessKey: ""
-
-	// The AWS secret key for making Route53 requests. Shouldn't be used in production
-	route53SecretKey: ""
+	route53ZoneId: "set me"
 }
 
 containers: {
@@ -24,16 +18,15 @@ containers: {
 		scale: args.scale
 		ports: "4315/http"
 		env: {
-			// We're building a DNS that looks like "root:root@tcp(db:3306)/acorn_dns?charset=utf8mb4&parseTime=True&loc=Local"
 			ACORN_DB_ENGINE: "mariadb"
 			ACORN_DB_USER: "secret://db-user-credentials/username?onchange=no-action"
-			ACORN_DB_PASSWORD:  "secret://db-user-credentials/password?onchange=no-action"
+			ACORN_DB_PASSWORD: "secret://db-user-credentials/password?onchange=no-action"
 			ACORN_DB_HOST: "db"
 			ACORN_DB_PORT: "3306"
-			ACORN_DB_NAME: args.dbName
-			ACORN_ROUTE53_ZONE_ID: args.route53ZoneId
-			AWS_ACCESS_KEY_ID: args.route53AccessKey
-			AWS_SECRET_ACCESS_KEY: args.route53SecretKey
+			ACORN_DB_NAME: "\(args.dbName)"
+			ACORN_ROUTE53_ZONE_ID: "\(args.route53ZoneId)"
+			AWS_ACCESS_KEY_ID: "secret://aws-creds/access-key?onchange=no-action"
+			AWS_SECRET_ACCESS_KEY: "secret://aws-creds/secret-key?onchange=no-action"
 		}
 	},
 
@@ -43,7 +36,7 @@ containers: {
 			MARIADB_ROOT_PASSWORD: "secret://root-credentials/password?onchange=no-action"
 			MARIADB_USER:          "secret://db-user-credentials/username?onchange=no-action"
 			MARIADB_PASSWORD:      "secret://db-user-credentials/password?onchange=no-action"
-			MARIADB_DATABASE:      args.dbName
+			MARIADB_DATABASE:      "\(args.dbName)"
 		}
 		ports: "3306/tcp"
 	}
@@ -60,6 +53,13 @@ secrets: {
 		type: "basic"
 		data: {
 			username: "acorn"
+		}
+	}
+	"aws-creds": {
+		type: "opaque"
+		data: {
+			"access-key": ""
+			"secret-key": ""
 		}
 	}
 }
