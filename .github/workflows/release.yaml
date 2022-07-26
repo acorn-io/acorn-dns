@@ -22,5 +22,5 @@ jobs:
         run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Build and push acorn
         run: |
-          acorn build -t ghcr.io/acorn-io/acorn-dns:$TAG .
+          acorn build --platform linux/amd64 --platform linux/arm64 -t ghcr.io/acorn-io/acorn-dns:$TAG .
           acorn push ghcr.io/acorn-io/acorn-dns:$TAG
