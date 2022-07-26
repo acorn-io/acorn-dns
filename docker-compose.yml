@@ -14,7 +14,7 @@ services:
       mysql:
         condition: service_started
   mysql:
-    image: mariadb:10.7.4
+    image: mariadb:10.8.3
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: acorn_dns
