@@ -2,16 +2,12 @@ package backend
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/acorn-io/acorn-dns/pkg/db"
 	"github.com/acorn-io/acorn-dns/pkg/model"
 	"github.com/acorn-io/acorn-dns/pkg/rand"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/sirupsen/logrus"
@@ -24,52 +20,43 @@ const (
 )
 
 type backend struct {
-	LeaseTime time.Duration
-	Zone      string
-	ZoneID    string
-	TTL       int64
+	baseDomain           string
+	ZoneID               string
+	recordTTLSeconds     int64
+	purgeIntervalSeconds int64
+	domainMaxAgeSeconds  int64
+	recordMaxAgeSeconds  int64
 
 	Svc *route53.Route53
 	db  db.Database
 }
 
-func NewBackend(database db.Database) (Backend, error) {
-	c := credentials.NewEnvCredentials()
-
+func NewBackend(zoneID string, recordTTLSecs, purgeIntervalSecs, domainMaxAgeSecs, recordMaxAgeSecs int64, database db.Database) (Backend, error) {
 	s, err := session.NewSession()
 	if err != nil {
 		return &backend{}, err
 	}
 
 	svc := route53.New(s, &aws.Config{
-		Credentials: c,
-		MaxRetries:  aws.Int(3),
+		MaxRetries: aws.Int(3),
 	})
 
 	z, err := svc.GetHostedZone(&route53.GetHostedZoneInput{
-		Id: aws.String(os.Getenv("AWS_HOSTED_ZONE_ID")),
+		Id: aws.String(zoneID),
 	})
 	if err != nil {
 		return &backend{}, err
 	}
 
-	d, err := time.ParseDuration(os.Getenv("DATABASE_LEASE_TIME"))
-	if err != nil {
-		return &backend{}, fmt.Errorf("couldn't parse database lease time. %v", err)
-	}
-
-	ttl, err := strconv.ParseInt(os.Getenv("TTL"), 10, 64)
-	if err != nil {
-		return &backend{}, fmt.Errorf("couldn't parse TTL. %v", err)
-	}
-
 	return &backend{
-		db:        database,
-		LeaseTime: d,
-		Zone:      strings.TrimSuffix(aws.StringValue(z.HostedZone.Name), "."),
-		ZoneID:    aws.StringValue(z.HostedZone.Id),
-		Svc:       svc,
-		TTL:       ttl,
+		db:                   database,
+		baseDomain:           strings.TrimSuffix(aws.StringValue(z.HostedZone.Name), "."),
+		ZoneID:               aws.StringValue(z.HostedZone.Id),
+		Svc:                  svc,
+		recordTTLSeconds:     recordTTLSecs,
+		purgeIntervalSeconds: purgeIntervalSecs,
+		domainMaxAgeSeconds:  domainMaxAgeSecs,
+		recordMaxAgeSeconds:  recordMaxAgeSecs,
 	}, nil
 }
 
@@ -125,7 +112,7 @@ func (b *backend) CreateDomain() (model.DomainResponse, error) {
 		return model.DomainResponse{}, err
 	}
 
-	domain, err := b.db.CreateNewSubDomain(hash, b.Zone)
+	domain, err := b.db.CreateNewSubDomain(hash, b.baseDomain)
 	if err != nil {
 		return model.DomainResponse{}, err
 	}
@@ -172,7 +159,7 @@ func (b *backend) doRecordsDelete(records []db.Record) error {
 		rrs := &route53.ResourceRecordSet{
 			Type: aws.String(record.Type),
 			Name: aws.String(record.FQDN),
-			TTL:  aws.Int64(b.TTL),
+			TTL:  aws.Int64(b.recordTTLSeconds),
 		}
 		rr := make([]*route53.ResourceRecord, 0)
 		for _, value := range strings.Split(record.Values, ",") {
@@ -215,7 +202,7 @@ func (b *backend) CreateRecord(domain string, domainID uint, input model.RecordR
 		Type:            aws.String(input.Type),
 		Name:            aws.String(fqdn),
 		ResourceRecords: rr,
-		TTL:             aws.Int64(b.TTL),
+		TTL:             aws.Int64(b.recordTTLSeconds),
 	}
 
 	rrsInput := route53.ChangeResourceRecordSetsInput{
@@ -252,11 +239,6 @@ func cleanRecordValue(rType string, value string) string {
 	return value
 }
 
-func (b *backend) GetRootDomain() string {
-	return b.Zone
-}
-
-// TODO make this better - recall the thing we did for our encrypted rancher tokens
 func (b *backend) createToken() (string, string, error) {
 	t := rand.StringWithAll(tokenLength)
 	hash, err := bcrypt.GenerateFromPassword([]byte(t), bcrypt.MinCost)
