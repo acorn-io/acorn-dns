@@ -1,18 +1,18 @@
 args: {
 	// Number of instances of the DNS service to run
-	scale: int | *1
+	scale: 1
 
 	// Name of the database
-	dbName: string | *"acorn_dns"
+	dbName: "acorn_dns"
 
 	// The AWS Route53 zone where FQDNs will be created
-	route53ZoneId: string
+	route53ZoneId: ""
 
 	// The AWS access key for making Route53 requests. Shouldn't be used in production
-	route53AccessKey: string
+	route53AccessKey: ""
 
 	// The AWS secret key for making Route53 requests. Shouldn't be used in production
-	route53SecretKey: string
+	route53SecretKey: ""
 }
 
 containers: {
@@ -30,14 +30,10 @@ containers: {
 			ACORN_DB_PASSWORD:  "secret://db-user-credentials/password?onchange=no-action"
 			ACORN_DB_HOST: "db"
 			ACORN_DB_PORT: "3306"
-
-			// These blow up
 			ACORN_DB_NAME: args.dbName
 			ACORN_ROUTE53_ZONE_ID: args.route53ZoneId
-
-			// We shouldn't actually set these for prod; need to rely on IAM profiles, but setting them locally works.
 			AWS_ACCESS_KEY_ID: args.route53AccessKey
-			AWS_SECRET_ACCESS_KEY: agrs.route53SecretKey
+			AWS_SECRET_ACCESS_KEY: args.route53SecretKey
 		}
 	},
 
@@ -47,8 +43,6 @@ containers: {
 			MARIADB_ROOT_PASSWORD: "secret://root-credentials/password?onchange=no-action"
 			MARIADB_USER:          "secret://db-user-credentials/username?onchange=no-action"
 			MARIADB_PASSWORD:      "secret://db-user-credentials/password?onchange=no-action"
-
-			// This blows up
 			MARIADB_DATABASE:      args.dbName
 		}
 		ports: "3306/tcp"
