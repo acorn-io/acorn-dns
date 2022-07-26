@@ -12,8 +12,8 @@ require (
 	github.com/urfave/cli/v2 v2.4.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e
-	gorm.io/driver/mysql v1.3.3
-	gorm.io/gorm v1.23.4
+	gorm.io/driver/mysql v1.3.5
+	gorm.io/gorm v1.23.8
 	k8s.io/apimachinery v0.18.8
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
