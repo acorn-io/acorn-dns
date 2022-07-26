@@ -4,8 +4,8 @@ build:
 image:
 	docker build .
 
-validate:
-	golangci-lint --timeout 5m run
+setup-ci-env:
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.46.2
 
 validate-ci:
 	go generate
@@ -16,11 +16,8 @@ validate-ci:
 		exit 1 \
 	;fi
 
+validate:
+	golangci-lint --timeout 5m run
+
 test:
 	go test ./...
-
-goreleaser:
-	goreleaser build --snapshot --single-target --rm-dist
-
-setup-ci-env:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.46.2
