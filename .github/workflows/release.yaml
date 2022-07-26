@@ -14,6 +14,8 @@ jobs:
           version: 'v1.24.3-k3s1'
       - uses: actions/checkout@v3
       - uses: acorn-io/actions-setup@v1
+        with:
+          token: ${{ secrets.PULL_TOKEN }}
       - uses: acorn-io/actions-login@v1
         with:
           registry: ghcr.io
