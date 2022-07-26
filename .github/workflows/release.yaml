@@ -9,9 +9,6 @@ jobs:
   push:
     runs-on: buildjet-4vcpu-ubuntu-2004
     steps:
-      - uses: debianmaster/actions-k3s@v1.0.5
-        with:
-          version: 'v1.24.3-k3s1'
       - uses: actions/checkout@v3
       - uses: acorn-io/actions-setup@v1
         with:
