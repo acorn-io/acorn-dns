@@ -3,7 +3,7 @@ module github.com/acorn-io/acorn-dns
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.44.63
+	github.com/aws/aws-sdk-go v1.44.65
 	github.com/glebarez/sqlite v1.4.6
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
