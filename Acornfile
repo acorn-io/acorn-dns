@@ -6,7 +6,7 @@ args: {
 	dbName: "acorn_dns"
 
 	// The AWS Route53 zone where FQDNs will be created
-	route53ZoneId: "set me"
+	route53ZoneId: ""
 }
 
 containers: {
@@ -23,8 +23,8 @@ containers: {
 			ACORN_DB_PASSWORD: "secret://db-user-credentials/password?onchange=no-action"
 			ACORN_DB_HOST: "db"
 			ACORN_DB_PORT: "3306"
-			ACORN_DB_NAME: "\(args.dbName)"
-			ACORN_ROUTE53_ZONE_ID: "\(args.route53ZoneId)"
+			ACORN_DB_NAME: args.dbName
+			ACORN_ROUTE53_ZONE_ID: args.route53ZoneId
 			AWS_ACCESS_KEY_ID: "secret://aws-creds/access-key?onchange=no-action"
 			AWS_SECRET_ACCESS_KEY: "secret://aws-creds/secret-key?onchange=no-action"
 		}
@@ -36,7 +36,7 @@ containers: {
 			MARIADB_ROOT_PASSWORD: "secret://root-credentials/password?onchange=no-action"
 			MARIADB_USER:          "secret://db-user-credentials/username?onchange=no-action"
 			MARIADB_PASSWORD:      "secret://db-user-credentials/password?onchange=no-action"
-			MARIADB_DATABASE:      "\(args.dbName)"
+			MARIADB_DATABASE:      args.dbName
 		}
 		ports: "3306/tcp"
 	}
