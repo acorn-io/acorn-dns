@@ -7,12 +7,18 @@ args: {
 
 	// The AWS Route53 zone where FQDNs will be created
 	route53ZoneId: ""
+
+	// The tag that should be displayed in version information
+	tag: "v0.0.0-dev"
 }
 
 containers: {
 	default: {
 		dependsOn: "db"
 		build: {
+			buildArgs: {
+				TAG: args.tag
+			}
 			context: "."
 		}
 		scale: args.scale
