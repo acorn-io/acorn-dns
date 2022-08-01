@@ -25,11 +25,7 @@ func newHandler(b backend.Backend) *handler {
 
 func (h *handler) root(w http.ResponseWriter, r *http.Request) {
 	v := version.Get()
-	if err := json.NewEncoder(w).Encode(v); err != nil {
-		w.WriteHeader(500)
-		_, _ = w.Write([]byte(`{"success": false}`))
-	}
-	w.WriteHeader(200)
+	writeSuccess(w, http.StatusOK, v)
 }
 
 func (h *handler) getDomain(w http.ResponseWriter, r *http.Request) {

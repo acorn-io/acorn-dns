@@ -69,8 +69,6 @@ func loggingMiddleware(logger *logrus.Entry) func(http.Handler) http.Handler {
 			wrapped := wrapResponseWriter(w)
 			next.ServeHTTP(wrapped, r)
 
-			// Per Shannon Huff 2021-11-20, only log requests if it's not
-			// a health check request
 			if !strings.Contains(r.URL.EscapedPath(), "healthz") {
 				logger.WithFields(logrus.Fields{
 					"status":   wrapped.status,
