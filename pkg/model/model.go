@@ -31,7 +31,9 @@ type RenewRequest struct {
 }
 
 type RenewResponse struct {
-	Name             string         `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// TODO - These records contain the "short" name, not the FQDN. Refactor the api to reflect that, but it needs
+	// to be coordinated with acorn.
 	OutOfSyncRecords []FQDNTypePair `json:"outOfSyncRecords,omitempty"`
 }
 

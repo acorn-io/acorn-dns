@@ -70,16 +70,28 @@ func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequ
 	var cleanedRecords []model.FQDNTypePair
 	// remove duplicates and FQDNs that don't belong to this domain
 	for _, record := range records {
-		if strings.HasSuffix(record.Name, domain) {
-			pair := model.FQDNTypePair{
-				FQDN: record.Name,
-				Type: record.Type,
+		fqdn := record.Name
+		// The renew request sends just the "short" name of the FQDN, not the full thing, so we need to construct it.
+		// Checking for and handling both forms (as well as a present or absent "." prefixing the domain) is just being
+		// overly cautious/forgiving of the request
+		if !strings.HasSuffix(record.Name, domain) {
+			if strings.HasPrefix(domain, ".") {
+				fqdn = record.Name + domain
+			} else {
+				fqdn = record.Name + "." + domain
 			}
-			if _, ok := recordMap[pair]; !ok {
-				cleanedRecords = append(cleanedRecords, pair)
-			}
-			recordMap[pair] = record
+		} else if strings.HasSuffix(record.Name, b.baseDomain) {
+			// Record is an FQDN, but doesn't match the validated domain. Error out.
+			return nil, fmt.Errorf("invalid record %v doesn't match %v", record.Name, domain)
 		}
+		pair := model.FQDNTypePair{
+			FQDN: fqdn,
+			Type: record.Type,
+		}
+		if _, ok := recordMap[pair]; !ok {
+			cleanedRecords = append(cleanedRecords, pair)
+		}
+		recordMap[pair] = record
 	}
 
 	if err := b.db.Renew(domainID, cleanedRecords, version); err != nil {
@@ -95,10 +107,11 @@ func (b *backend) Renew(domain string, domainID uint, records []model.RecordRequ
 	for pair, record := range recordMap {
 		if dr, ok := domainRecords[pair]; ok {
 			if dr.Values != db.DenormalizeValues(record.Values) {
-				outOfSync = append(outOfSync, pair)
+				// The renew request should return the "short" name part of the FQDN, not the entire FQDN
+				outOfSync = append(outOfSync, model.FQDNTypePair{FQDN: record.Name, Type: record.Type})
 			}
 		} else {
-			outOfSync = append(outOfSync, pair)
+			outOfSync = append(outOfSync, model.FQDNTypePair{FQDN: record.Name, Type: record.Type})
 		}
 	}
 
