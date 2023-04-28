@@ -1,0 +1,22 @@
+name: release-main 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push-main:
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: actions/checkout@v3
+      - uses: acorn-io/actions-setup@v2
+        with:
+          acorn-version: main
+      - uses: acorn-io/actions-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and Push
+        run: |
+          acorn build --push -t ghcr.io/${{ github.repository }}:main .
