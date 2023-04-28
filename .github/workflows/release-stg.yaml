@@ -1,0 +1,20 @@
+name: release-stg 
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '00 10 * * *'   # time in UTC
+
+jobs:
+  copy-main-to-stg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: imjasonh/setup-crane@00c9e93efa4e1138c9a7a5c594acd6c75a2fbf0c
+      - name: Copy Main to Stg 
+        run: |
+          crane tag ghcr.io/${{ github.repository }}:main stg
