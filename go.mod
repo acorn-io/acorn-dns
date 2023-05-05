@@ -7,7 +7,7 @@ require (
 	github.com/glebarez/sqlite v1.5.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/rancher/wrangler v1.0.0
+	github.com/rancher/wrangler v1.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.19.2
 	golang.org/x/crypto v0.8.0
