@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest 
     steps:
       - uses: actions/checkout@v3
-      - uses: acorn-io/actions-setup@v1
+      - uses: acorn-io/actions-setup@v2
       - uses: acorn-io/actions-login@v1
         with:
           registry: ghcr.io
