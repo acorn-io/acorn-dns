@@ -12,7 +12,7 @@ args: {
 	tag: "v0.0.0-dev"
 
 	// The hostname of the database
-	dbHost: "test"
+	dbHost: "db"
 }
 
 containers: {
