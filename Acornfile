@@ -10,11 +10,16 @@ args: {
 
 	// The tag that should be displayed in version information
 	tag: "v0.0.0-dev"
+
+	// The hostname of the database
+	dbHost: "db"
 }
 
 containers: {
 	default: {
+		if args.dbHost == "db" {
 		dependsOn: "db"
+		}
 		build: {
 			buildArgs: {
 				TAG: args.tag
@@ -27,7 +32,7 @@ containers: {
 			ACORN_DB_ENGINE: "mariadb"
 			ACORN_DB_USER: "secret://db-user-credentials/username?onchange=no-action"
 			ACORN_DB_PASSWORD: "secret://db-user-credentials/password?onchange=no-action"
-			ACORN_DB_HOST: "db"
+			ACORN_DB_HOST: args.dbHost
 			ACORN_DB_PORT: "3306"
 			ACORN_DB_NAME: args.dbName
 			ACORN_ROUTE53_ZONE_ID: args.route53ZoneId
@@ -35,7 +40,7 @@ containers: {
 			AWS_SECRET_ACCESS_KEY: "secret://aws-creds/secret-key?onchange=no-action"
 		}
 	},
-
+    if args.dbHost == "db" {
 	db: {
 		image: "mariadb:10.7.4"
 		env: {
@@ -45,6 +50,7 @@ containers: {
 			MARIADB_DATABASE:      args.dbName
 		}
 		ports: "3306/tcp"
+	}
 	}
 }
 
