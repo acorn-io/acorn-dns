@@ -16,7 +16,7 @@ args: {
 }
 
 containers: {
-	default: {
+	"acorn-dns": {
 		if args.dbHost == "db" {
 		dependsOn: "db"
 		}
@@ -55,6 +55,7 @@ containers: {
 }
 
 secrets: {
+	if args.dbHost == "db" {
 	"root-credentials": {
 		type: "basic"
 		data: {
@@ -66,6 +67,7 @@ secrets: {
 		data: {
 			username: "acorn"
 		}
+	}
 	}
 	"aws-creds": {
 		type: "opaque"
