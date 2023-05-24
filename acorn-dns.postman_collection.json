@@ -1,0 +1,403 @@
+{
+	"info": {
+		"_postman_id": "99aae9f7-799d-4cf1-8b26-3446dde965ac",
+		"name": "Acorn DNS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21377855"
+	},
+	"item": [
+		{
+			"name": "POST Domain",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody)",
+							"pm.collectionVariables.set(\"domain\", jsonData.name);",
+							"pm.collectionVariables.set(\"auth\", jsonData.token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST Record",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody)",
+							"pm.collectionVariables.set(\"fqdn\", jsonData.fqdn);",
+							"pm.collectionVariables.set(\"type\", jsonData.type);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"first\",\n    \"type\": \"A\",\n    \"values\": [\"127.0.0.1\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}/records",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}",
+						"records"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST TXT Record",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody)",
+							"pm.collectionVariables.set(\"fqdn\", jsonData.fqdn);",
+							"pm.collectionVariables.set(\"type\", jsonData.type);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"t.txt-test\",\n    \"type\": \"TXT\",\n    \"values\": [\"txt\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}/records",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}",
+						"records"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST Renew",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"records\": [\n        {\"name\": \"{{fqdn}}\", \"type\": \"{{type}}\", \"values\": [\"127.0.0.1\"] },\n        {\"name\": \"nope.{{fqdn}}\", \"type\": \"A\", \"values\": [\"127.0.0.1\", \"127.0.0.2\"] }\n        ],\n    \"version\": \"v0.0.1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}/renew",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}",
+						"renew"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE Record",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}/records/first",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}",
+						"records",
+						"first"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "POST Purge Records",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}/purgerecords",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}",
+						"purgerecords"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Domain",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.sendRequest(\"https://postman-echo.com/get\", function (err, response) {",
+							"    console.log(response.json());",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"hosts\": [\"127.0.0.1\"]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{endpoint}}/v1/domains/{{domain}}",
+					"protocol": "http",
+					"host": [
+						"{{endpoint}}"
+					],
+					"path": [
+						"v1",
+						"domains",
+						"{{domain}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "domain",
+			"value": ""
+		},
+		{
+			"key": "auth",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "fqdn",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "type",
+			"value": "A",
+			"type": "string"
+		},
+		{
+			"key": "endpoint",
+			"value": "localhost:4315",
+			"type": "string"
+		}
+	]
+}
