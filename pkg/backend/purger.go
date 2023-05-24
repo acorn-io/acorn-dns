@@ -71,6 +71,14 @@ func (b *backend) purge() {
 		return
 	}
 
+	// Elide records for "local" FQDNs, these won't exist in the database but shouldn't be deleted.
+	localSuffix := ".local." + b.baseDomain
+	for pair := range recordsToDelete {
+		if strings.HasSuffix(pair.FQDN, localSuffix) {
+			delete(recordsToDelete, pair)
+		}
+	}
+
 	if len(recordsToDelete) == 0 {
 		logrus.Infof("Records purged from Route53: 0")
 		return
