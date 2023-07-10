@@ -5,13 +5,13 @@ import (
 	"path"
 
 	"github.com/acorn-io/acorn-dns/pkg/commands"
-	_ "github.com/acorn-io/acorn-dns/pkg/commands"
 	"github.com/acorn-io/acorn-dns/pkg/version"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 	defer func() {
 		if r := recover(); r != nil {
 			// log panics forces exit
