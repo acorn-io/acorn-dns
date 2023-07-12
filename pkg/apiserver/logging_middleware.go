@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"runtime/debug"
@@ -70,12 +71,19 @@ func loggingMiddleware(logger *logrus.Entry) func(http.Handler) http.Handler {
 			next.ServeHTTP(wrapped, r)
 
 			if !strings.Contains(r.URL.EscapedPath(), "healthz") {
-				logger.WithFields(logrus.Fields{
+				requestLogger := logger.WithFields(logrus.Fields{
 					"status":   wrapped.status,
 					"method":   r.Method,
 					"path":     r.URL.EscapedPath(),
 					"duration": time.Since(start),
-				}).Infof("handled: %d", wrapped.status)
+				})
+
+				msg := fmt.Sprintf("handled: %d", wrapped.status)
+				if wrapped.status >= 400 {
+					requestLogger.Error(msg)
+				} else {
+					requestLogger.Debug(msg)
+				}
 			}
 		}
 
