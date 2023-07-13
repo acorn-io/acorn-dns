@@ -43,6 +43,9 @@ func (b *backend) purge() {
 					aws.StringValue(recordSet.Type) != model.RecordTypeTxt {
 					continue
 				}
+
+				cleanedName := strings.Replace(aws.StringValue(recordSet.Name), "\\052", "*", 1)
+				recordSet.Name = aws.String(cleanedName)
 				// key is name (fqdn) + type
 				pair := model.FQDNTypePair{
 					FQDN: strings.TrimSuffix(aws.StringValue(recordSet.Name), "."),
