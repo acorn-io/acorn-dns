@@ -33,7 +33,5 @@ OPTIONS:
    --db-port value                     Database port [$ACORN_DB_PORT]
    --log-level value, -l value         Log Level (default: "info") [$LOGLEVEL]
    --log-caller                        log the caller (aka line number and file) (default: false)
-   --log-disable-color                 disable log coloring (default: false)
-   --log-full-timestamp                force log output to always show full timestamp (default: false)
    --help, -h                          show help (default: false)
 ```
