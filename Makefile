@@ -21,3 +21,6 @@ validate:
 
 test:
 	go test ./...
+
+dev:
+	./scripts/dev.sh
