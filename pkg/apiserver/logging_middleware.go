@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/acorn-io/acorn-dns/pkg/model"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,6 +31,7 @@ func realIP(req *http.Request) string {
 type responseWriter struct {
 	http.ResponseWriter
 	status      int
+	body        []byte
 	wroteHeader bool
 }
 
@@ -48,6 +51,11 @@ func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 	rw.wroteHeader = true
+}
+
+func (rw *responseWriter) Write(data []byte) (int, error) {
+	rw.body = append(rw.body, data...)
+	return rw.ResponseWriter.Write(data)
 }
 
 // loggingMiddleware logs the incoming HTTP request & its duration.
@@ -80,7 +88,7 @@ func loggingMiddleware(logger *logrus.Entry) func(http.Handler) http.Handler {
 
 				msg := fmt.Sprintf("handled: %d", wrapped.status)
 				if wrapped.status >= 400 {
-					requestLogger.Error(msg)
+					requestLogger.WithFields(logrus.Fields{"error": asErrorResponseModel(wrapped.body).Message}).Errorf(msg)
 				} else {
 					requestLogger.Debug(msg)
 				}
@@ -89,4 +97,11 @@ func loggingMiddleware(logger *logrus.Entry) func(http.Handler) http.Handler {
 
 		return http.HandlerFunc(fn)
 	}
+}
+
+// asErrorResponseModel converts a byte array to an ErrorResponse model if possible
+func asErrorResponseModel(data []byte) model.ErrorResponse {
+	o := model.ErrorResponse{}
+	_ = json.Unmarshal(data, &o)
+	return o
 }

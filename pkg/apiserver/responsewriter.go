@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/acorn-io/acorn-dns/pkg/model"
-	"github.com/sirupsen/logrus"
 )
 
 func writeErrorResponse(w http.ResponseWriter, httpStatus int, message string, data interface{}) {
@@ -22,7 +21,6 @@ func writeErrorResponse(w http.ResponseWriter, httpStatus int, message string, d
 }
 
 func handleError(w http.ResponseWriter, httpStatus int, err error) {
-	logrus.Errorf("Error during request: %v", err)
 	writeErrorResponse(w, httpStatus, err.Error(), nil)
 }
 
