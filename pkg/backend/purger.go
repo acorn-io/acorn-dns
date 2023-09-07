@@ -74,11 +74,16 @@ func (b *backend) purge() {
 		return
 	}
 
-	// Elide records for "local" FQDNs, these won't exist in the database but shouldn't be deleted.
-	localSuffix := ".local." + b.baseDomain
+	// Ensure we don't remove records with the following suffixes.
+	exceptionSuffixes := []string{
+		".local." + b.baseDomain, // "local" FQDNs
+		"_psl." + b.baseDomain,   // public suffix list
+	}
 	for pair := range recordsToDelete {
-		if strings.HasSuffix(pair.FQDN, localSuffix) {
-			delete(recordsToDelete, pair)
+		for _, exception := range exceptionSuffixes {
+			if strings.HasSuffix(pair.FQDN, exception) {
+				delete(recordsToDelete, pair)
+			}
 		}
 	}
 
