@@ -1,4 +1,4 @@
-FROM ghcr.io/acorn-io/images-mirror/golang:1.20-alpine AS build
+FROM ghcr.io/acorn-io/images-mirror/golang:1.21-alpine AS build
 COPY / /src
 WORKDIR /src
 ARG TAG="v0.0.0-dev"
