@@ -10,7 +10,7 @@ require (
 	github.com/rancher/wrangler v1.0.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.19.2
-	golang.org/x/crypto v0.8.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
@@ -31,7 +31,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20220927061507-ef77025ab5aa // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/utils v0.0.0-20220922133306-665eaaec4324 // indirect
 	modernc.org/libc v1.20.3 // indirect
