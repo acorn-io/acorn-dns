@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/rancher/wrangler v1.0.1
 	github.com/sirupsen/logrus v1.9.0
-	github.com/urfave/cli/v2 v2.19.2
+	github.com/urfave/cli/v2 v2.27.1
 	golang.org/x/crypto v0.8.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	gorm.io/driver/mysql v1.4.1
