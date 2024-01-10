@@ -7,14 +7,14 @@ require (
 	github.com/glebarez/sqlite v1.5.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
-	github.com/rancher/wrangler v1.0.1
+	github.com/rancher/wrangler v1.1.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.19.2
 	golang.org/x/crypto v0.8.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
-	k8s.io/apimachinery v0.25.2
+	k8s.io/apimachinery v0.25.4
 )
 
 require (
