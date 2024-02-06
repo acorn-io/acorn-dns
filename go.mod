@@ -13,7 +13,7 @@ require (
 	golang.org/x/crypto v0.8.0
 	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
 	gorm.io/driver/mysql v1.4.1
-	gorm.io/gorm v1.24.0
+	gorm.io/gorm v1.25.7
 	k8s.io/apimachinery v0.25.2
 )
 
