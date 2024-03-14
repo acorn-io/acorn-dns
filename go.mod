@@ -11,7 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/urfave/cli/v2 v2.19.2
 	golang.org/x/crypto v0.8.0
-	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53
+	golang.org/x/exp v0.0.0-20240314144324-c7f7c6466f7f
 	gorm.io/driver/mysql v1.4.1
 	gorm.io/gorm v1.24.0
 	k8s.io/apimachinery v0.25.2
